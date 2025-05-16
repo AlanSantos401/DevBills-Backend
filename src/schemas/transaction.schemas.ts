@@ -34,4 +34,10 @@ export const getTransactionSchema = z.object({
 		.optional(),
 });
 
-export type GetTransactionsQuery = z.infer<typeof getTransactionSchema>
+export const getTransactionsSummarySchema = z.object({
+	month: z.string({ message: "O mês é obrigatório" }),
+	year: z.string({ message: "O ano é obrigatório" }),
+});
+
+export type GetTransactionsQuery = z.infer<typeof getTransactionSchema>;
+export type GetTransactionsSummarySchemaQuery = z.infer<typeof getTransactionsSummarySchema>;
