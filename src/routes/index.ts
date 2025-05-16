@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import categoryRoutes from "./category.routes";
-import transactionnRoutes from "./transaction.routes";
+import transactionRoutes from "./transaction.routes";
 
 async function routes(fastify: FastifyInstance): Promise<void> {
 	fastify.get("/health", async () => {
@@ -11,7 +11,7 @@ async function routes(fastify: FastifyInstance): Promise<void> {
 	});
 
 	fastify.register(categoryRoutes, { prefix: "/categories" });
-	fastify.register(transactionnRoutes, { prefix: "/transactions" });
+	fastify.register(transactionRoutes, { prefix: "/transactions" });
 }
 
 export default routes;
