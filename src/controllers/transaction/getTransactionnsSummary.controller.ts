@@ -71,7 +71,7 @@ export const getTransactionnsSummary = async (
         const summary: TransactionSummary = {
           totalExpenses,
           totalIncomes,
-          balance: totalIncomes - totalExpenses,
+          balance: Number((totalIncomes - totalExpenses).toExponential(2)),
           expenseCategory: Array.from(groupeExpenses.values()).map( (entry) => ({
             ...entry,
             porcentage: Number.parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2)),
