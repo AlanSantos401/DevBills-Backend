@@ -1,12 +1,21 @@
 import type { FastifyInstance } from "fastify";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import createTransaction from "../controllers/transaction/createTransaction.controller";
-import { createTransactionSchema, deleteTransactionSchema, getTransactionSchema, getTransactionsSummarySchema } from "../schemas/transaction.schemas";
-import { getTransactions } from "../controllers/transaction/getTransactions.controller";
-import { getTransactionnsSummary } from "../controllers/transaction/getTransactionnsSummary.controller";
 import { deleteTransaction } from "../controllers/transaction/deleteTransaction.controller";
+import { getTransactionnsSummary } from "../controllers/transaction/getTransactionnsSummary.controller";
+import { getTransactions } from "../controllers/transaction/getTransactions.controller";
+import { authMiddleware } from "../middlewares/auth.middlewares";
+import {
+	createTransactionSchema,
+	deleteTransactionSchema,
+	getTransactionSchema,
+	getTransactionsSummarySchema,
+} from "../schemas/transaction.schemas";
 
 const transactionRoutes = async (fastify: FastifyInstance) => {
+	fastify.addHook("preHandler", authMiddleware);
+
+	// Criacao de uma nova transacao
 	fastify.route({
 		method: "POST",
 		url: "/",
@@ -16,32 +25,35 @@ const transactionRoutes = async (fastify: FastifyInstance) => {
 		handler: createTransaction,
 	});
 
+	// Buscar com Filtros
 	fastify.route({
 		method: "GET",
 		url: "/",
 		schema: {
-			querystring: zodToJsonSchema(getTransactionSchema)
+			querystring: zodToJsonSchema(getTransactionSchema),
 		},
 		handler: getTransactions,
-	})
+	});
 
+	// Buscar resumo das transacoes
 	fastify.route({
 		method: "GET",
 		url: "/summary",
 		schema: {
-			querystring: zodToJsonSchema(getTransactionsSummarySchema)
+			querystring: zodToJsonSchema(getTransactionsSummarySchema),
 		},
 		handler: getTransactionnsSummary,
-	})
+	});
 
+	// Deletar uma transacao
 	fastify.route({
 		method: "DELETE",
 		url: "/:id",
 		schema: {
-			params: zodToJsonSchema(deleteTransactionSchema)
+			params: zodToJsonSchema(deleteTransactionSchema),
 		},
-		handler: deleteTransaction
-	})
+		handler: deleteTransaction,
+	});
 };
 
 export default transactionRoutes;
