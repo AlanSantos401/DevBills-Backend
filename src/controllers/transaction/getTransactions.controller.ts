@@ -15,6 +15,8 @@ export const getTransactions = async (
 
 	if (!userId) {
 		reply.status(401).send({ error: "Usúario não autenticado" });
+
+		return;
 	}
 
 	const { month, categoryId, year, type } = request.query;
