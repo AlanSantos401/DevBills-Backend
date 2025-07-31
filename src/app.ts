@@ -10,7 +10,10 @@ const app: FastifyInstance = Fastify({
 	},
 });
 
-app.register(cors);
+app.register(cors, {
+	methods: ["GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"],
+	origin: true,
+});
 
 app.register(routes, { prefix: "/api" });
 

@@ -20,7 +20,6 @@ export const getHistoricalTransactions = async (
 	}
 
 	const { month, year, months = 6 } = request.query;
-    
 
 	const baseDate = new Date(year, month - 1, 1);
 
