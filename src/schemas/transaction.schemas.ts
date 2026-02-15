@@ -13,7 +13,7 @@ export const createTransactionSchema = z.object({
 	categoryId: z.string().refine(isValidObjectId, {
 		message: "Categoria inválida",
 	}),
-	type: z.enum([TransactionType.expense, TransactionType.income], {
+	type: z.enum([TransactionType.EXPENSE, TransactionType.INCOME], {
 		errorMap: () => ({ message: "Tipo de transação inválido" }),
 	}),
 });
@@ -22,7 +22,7 @@ export const getTransactionSchema = z.object({
 	month: z.string().optional(),
 	year: z.string().optional(),
 	type: z
-		.enum([TransactionType.expense, TransactionType.income], {
+		.enum([TransactionType.EXPENSE, TransactionType.INCOME], {
 			errorMap: () => ({ message: "Tipo de transação inválido" }),
 		})
 		.optional(),

@@ -49,7 +49,7 @@ export const getTransactionnsSummary = async (
 		const groupeExpenses = new Map<string, CategorySummary>();
 
 		for (const transaction of transactions) {
-			if (transaction.type === TransactionType.expense) {
+			if (transaction.type === TransactionType.EXPENSE) {
 				const existing = groupeExpenses.get(transaction.categoryId) ?? {
 					categoryId: transaction.categoryId,
 					categoryName: transaction.category.name,

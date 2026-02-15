@@ -62,7 +62,7 @@ export const getHistoricalTransactions = async (
 			const monthData = monthlyData.find((m) => m.name === monthKey);
 
 			if (monthData) {
-				if (transaction.type === "income") {
+				if (transaction.type === "INCOME") {
 					monthData.income += transaction.amount;
 				} else {
 					monthData.expenses += transaction.amount;
