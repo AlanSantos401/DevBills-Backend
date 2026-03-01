@@ -13,22 +13,33 @@ export const getTransactionnsSummary = async (
 	request: FastifyRequest<{ Querystring: GetTransactionsQuery }>,
 	reply: FastifyReply,
 ): Promise<void> => {
-	const userId = request.userId; 
+	const userId = request.userId;
 
 	if (!userId) {
 		reply.status(401).send({ error: "Usuário não autenticado" });
 		return;
 	}
 
-	const { month, year } = request.query;
+	const month = Number(request.query.month);
+const year = Number(request.query.year);
 
-	if (!month || !year) {
+	if (year === undefined || month === undefined) {
 		reply.status(400).send({ error: "Mês e Ano são obrigatórios" });
 		return;
 	}
 
-	const startDate = dayjs.utc(`${year}-${month}-01`).startOf("month").toDate();
-	const endDate = dayjs.utc(startDate).endOf("month").toDate();
+	let startDate: Date;
+	let endDate: Date;
+
+	if (month === 0) {
+		startDate = dayjs.utc(`${year}-01-01`).startOf("year").toDate();
+		endDate = dayjs.utc(startDate).endOf("year").toDate();
+	} 
+
+	else {
+		startDate = dayjs.utc(`${year}-${month}-01`).startOf("month").toDate();
+		endDate = dayjs.utc(startDate).endOf("month").toDate();
+	}
 
 	try {
 		const transactions = await prisma.transaction.findMany({
@@ -46,11 +57,12 @@ export const getTransactionnsSummary = async (
 
 		let totalExpenses = 0;
 		let totalIncomes = 0;
-		const groupeExpenses = new Map<string, CategorySummary>();
+
+		const groupExpenses = new Map<string, CategorySummary>();
 
 		for (const transaction of transactions) {
 			if (transaction.type === TransactionType.EXPENSE) {
-				const existing = groupeExpenses.get(transaction.categoryId) ?? {
+				const existing = groupExpenses.get(transaction.categoryId) ?? {
 					categoryId: transaction.categoryId,
 					categoryName: transaction.category.name,
 					categoryColor: transaction.category.color,
@@ -59,27 +71,34 @@ export const getTransactionnsSummary = async (
 				};
 
 				existing.amount += transaction.amount;
-				groupeExpenses.set(transaction.categoryId, existing);
+				groupExpenses.set(transaction.categoryId, existing);
 
 				totalExpenses += transaction.amount;
 			} else {
 				totalIncomes += transaction.amount;
 			}
 		}
-		
-        console.log(Array.from(groupeExpenses.values()))
-        const summary: TransactionSummary = {
-          totalExpenses,
-          totalIncomes,
-          balance: Number((totalIncomes - totalExpenses).toExponential(2)),
-          expenseCategory: Array.from(groupeExpenses.values()).map( (entry) => ({
-            ...entry,
-            porcentage: Number.parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2)),
-          })).sort((a,b) => b.amount - a.amount )
-        }
+
+		const summary: TransactionSummary = {
+			totalExpenses,
+			totalIncomes,
+			balance: totalIncomes - totalExpenses, // ✅ corrigido
+			expenseCategory: Array.from(groupExpenses.values())
+				.map((entry) => ({
+					...entry,
+					porcentage:
+						totalExpenses > 0
+							? Number(
+									((entry.amount / totalExpenses) * 100).toFixed(2),
+							  )
+							: 0,
+				}))
+				.sort((a, b) => b.amount - a.amount),
+		};
+
 		reply.send(summary);
 	} catch (err) {
-		request.log.error("Error ao trazer transações", err);
+		request.log.error("Erro ao trazer transações", err);
 		reply.status(500).send({ error: "Erro do servidor" });
 	}
 };

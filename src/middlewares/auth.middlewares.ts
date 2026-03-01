@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import admin from "firebase-admin";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -9,23 +10,27 @@ declare module "fastify" {
 
 export const authMiddleware = async (
 	request: FastifyRequest,
-	resply: FastifyReply,
+	reply: FastifyReply,
 ): Promise<void> => {
 	const authHeader = request.headers.authorization;
-	
+
 	if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		resply.code(401).send({ error: "Token de autorização não fornecido" });
+		reply.code(401).send({ error: "Token não fornecido" });
 		return;
 	}
 
 	const token = authHeader.replace("Bearer ", "");
 
 	try {
-		const decodedToken = await admin.auth().verifyIdToken(token);
+		const decoded = jwt.verify(token, env.JWT_SECRET) as {
+			userId: string;
+			email: string;
+		};
 
-		request.userId = decodedToken.uid;
+		request.userId = decoded.userId;
+
 	} catch (err) {
 		request.log.error("Erro ao verificar token", err);
-		resply.code(401).send({ error: "Token inválido ou expirado" });
+		reply.code(401).send({ error: "Token inválido ou expirado" });
 	}
 };

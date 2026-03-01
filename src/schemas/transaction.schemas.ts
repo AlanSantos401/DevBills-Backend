@@ -6,16 +6,28 @@ const isValidObjectId = (id: string): boolean => ObjectId.isValid(id);
 
 export const createTransactionSchema = z.object({
 	description: z.string().min(1, "Descrição obrigatória"),
+
 	amount: z.number().positive("Valor deve ser positivo"),
+
 	date: z.coerce.date({
 		errorMap: () => ({ message: "Data inválida" }),
 	}),
+
 	categoryId: z.string().refine(isValidObjectId, {
 		message: "Categoria inválida",
 	}),
+
 	type: z.enum([TransactionType.EXPENSE, TransactionType.INCOME], {
 		errorMap: () => ({ message: "Tipo de transação inválido" }),
 	}),
+
+	installments: z
+		.number()
+		.int()
+		.min(1, "Mínimo 1 parcela")
+		.max(12, "Máximo 12 parcelas")
+		.optional()
+		.default(1),
 });
 
 export const getTransactionSchema = z.object({
